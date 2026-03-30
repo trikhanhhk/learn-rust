@@ -1,29 +1,40 @@
-use std::{path::Path};
+use std::{path::Path, vec};
 
-use crate::{cli::args::parse_args};
-mod services;
+use crate::cli::args::parse_args;
 mod cli;
+mod services;
 mod utils;
 fn main() {
     let args = parse_args();
     let path = Path::new(&args.path);
-    // let tree = build_tree(path);
-    // let formatted_tree = format_tree(&tree);
-
-    let current_time = std::time::Instant::now();
-    let results = services::build::build(path.to_path_buf());
-    let elapsed = current_time.elapsed();
-    println!("Elapsed time: {:.2?}", elapsed);
-
-    for _ in results {
-        // println!(
-        //     "{:?} {} {} ({})",
-        //     r.kind,
-        //     r.name,
-        //     r.path,
-        //     r.size
-        // );
-        return ();
+    let mode = args.mode;
+    if mode == cli::args::Mode::SingleThread {
+        let start = std::time::Instant::now();
+        let _ = services::build::build_single(path);
+        let duration = start.elapsed();
+        println!("Single thread: {} ms", duration.as_millis());
+    } else if mode == cli::args::Mode::MultiThread {
+        let mut performance_test = vec![];
+        let thread_options = 1..30;
+        for threads in thread_options.clone() {
+            let start = std::time::Instant::now();
+            let _ =services::build::build_threads(path.to_path_buf(), threads);
+            let duration = start.elapsed();
+            performance_test.push(duration);
+        }
+        if let Some((min_index, &min_time)) =
+            performance_test.iter().enumerate().min_by_key(|(_, t)| **t)
+        {
+            println!(
+                "Good at: {} threads → {} ms",
+                thread_options.clone().nth(min_index).unwrap(),
+                min_time.as_millis()
+            );
+        }
+    } else if mode == cli::args::Mode::Rayon {
+        let start = std::time::Instant::now();
+        let _ =services::build::build_rayon(path.to_path_buf());
+        let duration = start.elapsed();
+        println!("Rayon: {} ms", duration.as_millis());
     }
-
 }
