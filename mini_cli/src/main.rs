@@ -1,6 +1,6 @@
 // use std::{path::Path, vec};
 
-use mini_cli::server::tcp::start_server;
+use mini_cli::server::{app::create_app, tcp::start_server};
 
 // use crate::cli::args::parse_args;
 fn main() {
@@ -37,5 +37,6 @@ fn main() {
     //     println!("Rayon: {} ms", duration.as_millis());
     // }
 
-    start_server("127.0.0.1:8080");
+    let routes = create_app().build();
+    start_server("127.0.0.1:8080", routes);
 }

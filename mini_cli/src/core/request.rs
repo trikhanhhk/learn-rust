@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 
+use crate::core::Method;
+
 #[derive(Debug)]
 pub struct Request {
-    pub method: String,
+    pub method: Method,
     pub path: String,
     pub query: HashMap<String, String>,
     // json body
@@ -17,8 +19,19 @@ pub fn parse_params(req: &str) -> Request {
     // parse request
     let mut lines = header_part.lines();
     let request_line = lines.next().unwrap_or("");
+
     let mut parts = request_line.split_whitespace();
-    let method = parts.next().unwrap_or("").to_string();
+
+    let method_str = parts.next().unwrap_or("").to_uppercase();
+    let method = match method_str.as_str() {
+        "GET" => Method::GET,
+        "POST" => Method::POST,
+        "PUT" => Method::PUT,
+        "PATCH" => Method::PATCH,
+        "DELETE" => Method::DELETE,
+        _ => Method::GET, // default to GET if unknown
+    };
+
     let full_path = parts.next().unwrap_or("");
 
     let (path, query) = parse_path_and_query(full_path);

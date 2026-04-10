@@ -1,11 +1,10 @@
-use std::net::TcpListener;
+use std::{ net::TcpListener, sync::Arc, thread};
 
 use crate::{
-    core::request::parse_params,
-    router::{ router::route},
+    core::{Routes, request::parse_params}, router::{registry::route_registry},
 };
 
-fn handle_connection(mut stream: std::net::TcpStream) {
+fn handle_connection(routes: &Routes, mut stream: std::net::TcpStream) {
     use std::io::{Read, Write};
     let mut buffer = [0; 4096];
     match stream.read(&mut buffer) {
@@ -14,7 +13,7 @@ fn handle_connection(mut stream: std::net::TcpStream) {
 
             let parsed_request = parse_params(&request_str);
             
-            let response = route(&parsed_request);
+            let response = route_registry(routes, &parsed_request);
             
             let response_str = format!(
                 "HTTP/1.1 {} OK\r\nContent-Length: {}\r\n\r\n{}",
@@ -33,14 +32,17 @@ fn handle_connection(mut stream: std::net::TcpStream) {
     }
 }
 
-pub fn start_server(addr: &str) {
+pub fn start_server(addr: &str, routes: Arc<Routes>) {
     println!("Starting TCP server on {}", addr);
     let listener = TcpListener::bind(addr).expect("Cannot bind");
 
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
-                handle_connection(stream);
+                let routes = Arc::clone(&routes);
+                thread::spawn(move || {
+                    handle_connection(&routes, stream);
+                });
             }
             Err(e) => {
                 eprintln!("Connection failed: {}", e);
