@@ -1,23 +1,23 @@
 use std::path::Path;
 
 use crate::{
-    core::{request::Request, response::Response}, router::router::Router, services::build::build_rayon, utils::formatter::format_tree
+    core::{request::Request, response::Response}, services::build::build_rayon, utils::formatter::format_tree
 };
 
 pub struct CalcHandler;
 
-impl Router for CalcHandler {
-    fn route(&self, req: &Request) -> Response {
-        match req.method {
-            crate::core::Method::POST => calc_handler_post(req),
-            crate::core::Method::GET => calc_handler_get(req),
-            _ => Response {
-                status_code: 405,
-                body: "Method Not Allowed".to_string(),
-            },
-        }
-    }
-}
+// impl Router for CalcHandler {
+//     fn route(&self, req: &Request) -> Response {
+//         match req.method {
+//             crate::core::Method::POST => calc_handler_post(req),
+//             crate::core::Method::GET => calc_handler_get(req),
+//             _ => Response {
+//                 status_code: 405,
+//                 body: "Method Not Allowed".to_string(),
+//             },
+//         }
+//     }
+// }
 
 fn calc(max_depth: usize, path_raw: &str) -> String {
     let mut result = String::new();

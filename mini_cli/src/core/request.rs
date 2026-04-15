@@ -74,7 +74,6 @@ pub fn parse_path_and_query(full_path: &str) -> (String, HashMap<String, String>
         }
     }
 
-
     (path, query_map)
 }
 

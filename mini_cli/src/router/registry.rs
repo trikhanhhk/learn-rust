@@ -1,9 +1,9 @@
-use crate::core::{Routes, response::Response};
+use crate::core::{Routes, request::Request, response::Response};
 
-pub fn route_registry(routes: &Routes, req: &crate::core::request::Request) -> Response {
+pub fn route_registry(routes: &Routes, req: &Request) -> Response {
     if let Some(methods) = routes.get(&req.path) {
         if let Some(handler) = methods.get(&req.method) {
-            return handler.route(req);
+            return handler(req);
         } else {
             return Response {
                 status_code: 405,

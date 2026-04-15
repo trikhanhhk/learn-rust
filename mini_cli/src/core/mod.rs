@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::router::router::Router;
+use crate::core::{request::Request, response::Response};
 
 pub mod request;
 pub mod response;
@@ -14,4 +14,5 @@ pub enum Method {
     DELETE,
 }
 
-pub type Routes = HashMap<String, HashMap<Method, Box<dyn Router>>>;
+pub type Handler = Box<dyn Fn(&Request) -> Response + Send + Sync>;
+pub type Routes = HashMap<String, HashMap<Method, Handler>>;
